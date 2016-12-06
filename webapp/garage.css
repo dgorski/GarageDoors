@@ -1,0 +1,105 @@
+
+/* these should all be hidden initially.  The openView() js method displays the appropriate one */
+#image_loader, #settings, #settings_freset, #settings_restart, #settings_firmware, #settings_webapp, 
+#settings_password, #settings_wifi, #settings_logging, #settings_time, #messages  { display: none; }
+
+body {
+  margin: 0;
+  -webkit-text-size-adjust: 100%;
+  font: 17px/21px -apple-system-font, Helvetica, Arial, Sans-Serif;
+  background-image: url('binding_dark_sm.png');
+}
+
+.page { left: 0; right: 0; top: 0; bottom: 0; position: relative; }
+.row { left: 0; right: 0; }
+.col { top: 0; bottom: 0; }
+.page, .row, .col { overflow: hidden; }
+
+  /*.page, .row, .col {position: absolute;}*/ /* this broke click completely for the entire app */
+
+.header { 
+  height: 3em;
+  background: #000;
+  line-height: 3em;
+  padding: 0 1em;
+  text-align: center;
+  color:white;
+  background-color:black;
+}
+
+.body.row { 
+  top: 3em; 
+  bottom: 0; 
+}
+
+.button {
+  background: none;
+  background-color: blue;
+  color: lightgrey;
+  text-align: center;
+  margin: .5em 1em;
+  height: 1.75em;
+  line-height: 1.75em;
+  font-size: 1.25em;
+  border-radius: 7px; 
+  cursor: pointer;
+}
+
+#doorSpacerDiv {
+  height: 120px; /* half the height of the image+button */
+}
+#doorTwoDiv { /* hidden by default */
+  display: none;
+}
+  
+
+#doorDivContainer {
+}
+
+.headerButtonRight {
+  color: darkgrey;
+  position: absolute;
+  line-height: 1.25em;
+  display: block;
+  top:0px;
+  transform: translate(0,50%);
+  right: 1em;
+}
+
+.headerButtonLeft {
+  color: darkgrey;
+  position: absolute;
+  line-height: 1.25em;
+  display: block;
+  top:0px;
+  transform: translate(0,50%);
+  left: 1em;
+}
+
+.settingsRow {
+  color: black;
+  background-color: white;
+  border: none;
+  border-bottom: thin solid grey;
+  height: 3em;
+  line-height: 3em;
+  padding-left: 0.5em;
+  position: relative;
+}
+
+.settingsPanel {
+  color: black;
+  background-color: white;
+  padding-left: 0.5em;
+  position: relative;
+  padding: 1em;
+}
+
+.icon {
+  vertical-align: middle !important;
+  padding: 0 .3em;
+}
+
+.clickable {
+  cursor: pointer;
+}

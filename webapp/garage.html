@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimal-ui" /> <!-- maximum-scale=1.0, -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="mobile-web-app-capable" content="yes" /> 
+<!--  <link href="css/materialdesignicons.min.css" media="all" rel="stylesheet" type="text/css" /> -->
+  <!--<script src="jquery-2.1.4.js"></script>-->
+  <link href="garage.css" media="all" rel="stylesheet" type="text/css" />
+  <link href="garage-mdi.css" media="all" rel="stylesheet" type="text/css" />
+  <script src="garage.js"></script>
+</head><body>
+
+<div id=image_loader><img src=garage-open.png /><img src=garage-closed.png /></div>
+
+<!-- main view -->
+<div id=home class="page">
+ <div class="header row">
+ <i class="headerButtonRight mdi mdi-settings clickable" onclick="openView('settings');"></i>
+ Garage
+ </div>
+ <div class="body row">
+  <div id=doorDivContainer>
+   <div id=doorSpacerDiv>&nbsp;</div>
+   <div id=doorOneDiv>
+    <div><img src=garage-open.png width=100%/></div>
+    <div class="button clickable" onclick="activateDoorOne();">Activate</div>
+   </div>
+   <div id=doorTwoDiv style="display:none"><!-- will be hidden unless "show second door" is active -->
+    <div><img src=garage-closed.png width=100%/></div>
+    <div class="button clickable" onclick="activateDoorTwo();">Activate</div>
+   </div>
+  </div>
+ </div>
+</div>
+<!-- settings panel -->
+<div id=settings class="page">
+ <div class="header row clickable" onclick="openView('home');">
+  <i class="headerButtonLeft mdi mdi-arrow-left" ></i>
+  Settings
+ </div>
+ <div class="body row">
+ <div>
+  <div class="settingsRow clickable" onclick="toggleDoorTwo();">
+  <i class="mdi-lower mdi-home-outline icon"></i>
+  Show Both Doors
+  <i id=doorTwoCheckMark class="headerButtonRight mdi mdi-checkbox-blank-outline"></i> 
+  </div>
+  <div class="settingsRow clickable" onclick="openView('settings_wifi');">
+  <i class="mdi-lower mdi-wifi icon"></i>
+  WiFi Setup
+  <i class="headerButtonRight mdi mdi-menu-right"></i> 
+  </div>
+  <div class="settingsRow" onclick="openView('settings_password');">
+  <i class="mdi-lower mdi-shield-outline icon"></i>
+  Passwords
+  <i class="headerButtonRight mdi mdi-menu-right"></i> 
+  </div>
+  <div class="settingsRow" onclick="openView('settings_restart');">
+  <i class="mdi-lower mdi-autorenew icon"></i>
+  Restart
+  <i class="headerButtonRight mdi mdi-menu-right"></i> 
+  </div>
+  <div class="settingsRow clickable" onclick="openView('settings_logging');">
+  <i class="mdi-lower mdi-script icon"></i>
+  Logging Setup
+  <i class="headerButtonRight mdi mdi-menu-right"></i> 
+  </div>
+  <div class="settingsRow" onclick="openView('settings_time');">
+  <i class="mdi-lower mdi-clock icon"></i>
+  Time Setup
+  <i class="headerButtonRight mdi mdi-menu-right"></i> 
+  </div>
+  <div class="settingsRow" onclick="openView('settings_firmware');">
+  <i class="mdi-lower mdi-matrix icon"></i>
+  Firmware Update
+  <i class="headerButtonRight mdi mdi-menu-right"></i> 
+  </div>
+  <div class="settingsRow" onclick="openView('settings_webapp');">
+  <i class="mdi-lower mdi-open-in-app icon"></i>
+  App Update
+  <i class="headerButtonRight mdi mdi-menu-right"></i> 
+  </div>
+  <div class="settingsRow" onclick="openView('settings_freset');">
+  <i class="mdi-lower mdi-flash icon"></i>
+  Factory Reset
+  <i class="headerButtonRight mdi mdi-menu-right"></i> 
+  </div>
+ </div>
+ </div>
+</div>
+<!-- wifi settings panel -->
+<div id=settings_wifi class="page">
+ <div class="header row clickable" onclick="openView('settings');">
+  <i class="headerButtonLeft mdi mdi-arrow-left" ></i>
+  WiFi
+ </div>
+ <div class="settingsPanel">
+ <p>Some text</p>
+ </div>
+</div>
+
+<!-- logging panel -->
+<div id=settings_logging class="page">
+ <div class="header row clickable" onclick="openView('settings');">
+  <i class="headerButtonLeft mdi mdi-arrow-left" ></i>
+  Logging
+ </div>
+ <div class="settingsPanel">
+ <p>The firmware is capable of logging door events via the syslog protocol.  This panel will provide configuration options for syslog server, facility and severity settings.</p>
+ </div>
+</div>
+
+<!-- time settings panel -->
+<div id=settings_time class="page">
+ <div class="header row clickable" onclick="openView('settings');">
+  <i class="headerButtonLeft mdi mdi-arrow-left" ></i>
+  Time
+ </div>
+ <div class="settingsPanel">
+ <p>The firmware is capable of synchronizing the time-of-day with an NTP server using SNTP.  This panel will provide configuration of an NTP server to synchonize with.</p>
+ </div>
+</div>
+
+<!-- password panel -->
+<div id=settings_password class="page">
+ <div class="header row clickable" onclick="openView('settings');">
+  <i class="headerButtonLeft mdi mdi-arrow-left" ></i>
+  Passwords
+ </div>
+ <div class="settingsPanel">
+ <p>Access to the interface is protected with a Username and Password.</p>
+ <p>Changes will take place after a reboot.</p>
+ <form name="passwordForm">
+ <p>Username: <input name=username type=text value=admin></p>
+ <p>Password: <input name=password type=text value=garage></p>
+ </form>
+ <div class="button" onclick="updatePassword();">Update user/password</div>
+ </div>
+</div>
+
+<!-- restart panel -->
+<div id=settings_restart class="page">
+ <div class="header row clickable" onclick="openView('settings');">
+  <i class="headerButtonLeft mdi mdi-arrow-left" ></i>
+  Restart
+ </div>
+ <div class="settingsPanel">
+ <p>This option will restart the device with the current configuration in place.</p>
+ <br/>
+ <div class="button" onclick="restartDevice();">Restart Device</div>
+ </div>
+</div>
+
+<!-- firmware update panel -->
+<div id=settings_firmware class="page">
+ <div class="header row clickable" onclick="openView('settings');">
+  <i class="headerButtonLeft mdi mdi-arrow-left" ></i>
+  Firmware Update
+ </div>
+ <div class="settingsPanel">
+ <p>This option updates the firmware on the device.</p>
+ <p>Check <a href="http://www.gorski.net/iot/garage/firmware">here</a> for avaialbe
+ firmware updates.</p>
+ <form name="fwForm" enctype="multipart/form-data" action="http://10.16.24.49/api/firmwareUpdate" method="POST">
+ <p>Select the application package:</p>
+ <p><input type=file name=upload></p>
+ <div class="button" onclick="fwUpdate();">Upload Firmware Update</div>
+ </form>
+ </div>
+</div>
+
+<!-- web app update panel -->
+<div id=settings_webapp class="page">
+ <div class="header row clickable" onclick="openView('settings');">
+  <i class="headerButtonLeft mdi mdi-arrow-left" ></i>
+  App Update
+ </div>
+ <div class="settingsPanel">
+ <p>This option updates the application code (this web interface) on the device.</p>
+ <p>Check <a href="http://www.gorski.net/iot/garage/firmware">here</a> for avaialbe
+ application updates.</p>
+ <form name="appForm" enctype="multipart/form-data" action="http://10.16.24.49/api/applicationUpdate" method="POST">
+ <p>Select the application package:</p>
+ <p><input type=file name=upload></p>
+ <div class="button" onclick="appUpdate();">Upload App Update</div>
+ </form>
+ </div>
+</div>
+
+<!-- factory reset panel -->
+<div id=settings_freset class="page">
+ <div class="header row clickable" onclick="openView('settings');">
+  <i class="headerButtonLeft mdi mdi-arrow-left" ></i>
+  Factory Reset
+ </div>
+ <div class="settingsPanel">
+ <p>This option will reset all configuration data on the device and restart it in factory default mode.</p>
+ <p>This means that the device will need to be reconfigured using the initial setup procedures.</p>
+ <p>Would you like to factory reset the device?</p>
+ <br/>
+ <div class="button" onclick="factoryReset();">Reset Device</div>
+ </div>
+</div>
+
+<!-- factory reset panel -->
+<div id=messages class="page">
+ <div class="header row clickable" onclick="openView('settings');">
+  <i class="headerButtonLeft mdi mdi-arrow-left" ></i>
+  <span id=messagesSpan>App Message</span>
+ </div>
+ <div id=messagesDiv class="settingsPanel">
+ </div>
+</div>
+
+</body></html>

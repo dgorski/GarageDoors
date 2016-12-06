@@ -1,0 +1,11 @@
+#!C:/strawberry/perl/bin/perl.exe
+
+$ERROR = 0;
+
+$json = '{ "result": "OK" }';
+
+if($ERROR) {
+  $json = '{ "result": "error", "error": "An error occurred" }';
+}
+
+print "Content-type: application/json\r\n\r\n$json";

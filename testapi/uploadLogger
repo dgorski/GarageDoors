@@ -1,0 +1,21 @@
+#!C:/strawberry/perl/bin/perl.exe
+
+if(!open(FILE, ">c:/temp/upload.txt")) {
+  $x = $!;
+  print "Content-type: text/plain\r\n\r\nOpen failed: $x\r\n";
+}
+
+for my $key (keys(%ENV)) {
+  print FILE "$key = $ENV{$key}\n";
+}
+print FILE "\r\n\r\n";
+
+while(<STDIN>) { 
+  print FILE;
+}
+
+close(FILE);
+
+print "Content-type: text/plain\r\n\r\nUpload complete.\r\n";
+
+exit;

@@ -1,0 +1,6 @@
+#!C:/strawberry/perl/bin/perl.exe
+
+$json = '{ "doorOne": "closed", "doorTwo": "open" }' . "\r\n";
+
+print "Content-type: application/json\r\n\r\n$json";
+

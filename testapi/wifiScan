@@ -1,0 +1,19 @@
+#!C:/strawberry/perl/bin/perl.exe
+
+$json = <<'EOJ';
+[
+{ "ssid": "gorski", "rssi": -40, "secure": true },
+{ "ssid": "xfinitywifi", "rssi": -87, "secure": false },
+{ "ssid": "HOME-AF5E", "rssi": -86, "secure": true },
+{ "ssid": "xfinitywifi", "rssi": -39, "secure": false },
+{ "ssid": "ATT5W3fHk5", "rssi": -76, "secure": true },
+{ "ssid": "ATT9J3k6w3", "rssi": -91, "secure": true },
+{ "ssid": "kids", "rssi": -76, "secure": true },
+{ "ssid": "gorski4", "rssi": -78, "secure": true },
+{ "ssid": "belkin.994", "rssi": -87, "secure": true },
+{ "ssid": "belkin.994.guests", "rssi": -90, "secure": false },
+{ "ssid": "lynneshock-EXT", "rssi": -90, "secure": true }
+]
+EOJ
+
+print "Content-type: application/json\r\n\r\n$json";
