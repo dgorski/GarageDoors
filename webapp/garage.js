@@ -104,7 +104,7 @@ function parseJson(expr) {
  */
 function refreshDoorStates() {
   //console.log("getting updated door states...");
-  doGet("/api/doorStatus", updateDoorStates);
+  doGet("/api/doorStatus", updateDoorStates, function(){});
 }
 
 /**
@@ -222,6 +222,9 @@ function appUpdate() {
   }
 }
 
+/**
+ * Grab password form fields and submit config update
+ */
 function updatePassword() {
   var settings = { "web": { "username": "", "password": "" } };
   var form = document.forms.passwordForm;
@@ -265,5 +268,5 @@ function wifiScan() {
  */
 function wifiScanResult(result) {
   var networks = JSON.parse(result.responseText);
-  console.log("updating door states: " + JSON.stringify(networks));
+  console.log("wifi scan data: " + JSON.stringify(networks));
 }
