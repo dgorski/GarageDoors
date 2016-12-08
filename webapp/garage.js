@@ -35,7 +35,7 @@ function visibilityRefresh() {
 }
 
 /**
- * Show a view, hide the previous one.  Views are referenced by contianing DIV ID
+ * Show a view, hide the previous one.
  */
 function openView(view) {
   document.getElementById(currentView).style.display = 'none';
@@ -49,7 +49,7 @@ function openView(view) {
 function doGet(uri, success_cb, error_cb) {
   if(success_cb === undefined) success_cb = function(){ };
   if(error_cb === undefined) error_cb = function(){
-    openMessagePanel("The operation failed, the device did not respond to our request");
+    openMessagePanel("Error", "<p>The operation failed, the device did not respond to our request</p>");
   };
 
   var xhttp = new XMLHttpRequest();
@@ -66,7 +66,7 @@ function doGet(uri, success_cb, error_cb) {
 function doPost(uri, data, success_cb, error_cb) {
   if(success_cb === undefined) success_cb = function(){ };
   if(error_cb === undefined) error_cb = function(){
-    openMessagePanel("The operation failed, the device did not respond to the request");
+    openMessagePanel("Error", "<p>The operation failed, the device did not respond to the request</p>");
   };
 
   var xhttp = new XMLHttpRequest();
@@ -84,7 +84,8 @@ function doPost(uri, data, success_cb, error_cb) {
 /**
  * For ajax callbacks
  */
-function openMessagePanel(message) {
+function openMessagePanel(title, message) {
+  document.getElementById("messagesSpan").innerHTML = title;
   document.getElementById("messagesDiv").innerHTML = message;
   openView("messages");
 }
@@ -186,7 +187,7 @@ function toggleDoorTwo() {
 function factoryReset() {
   console.log("factoryReset()");
   doPost("/api/freset", undefined,
-    function() { openMessagePanel("The device is resetting."); }
+    function() { openMessagePanel("Info", "<p>The device is resetting.</p>"); }
   );
 }
 
@@ -196,7 +197,7 @@ function factoryReset() {
 function restartDevice() {
   console.log("restartDevice()");
   doPost("/api/restart", undefined,
-    function() { openMessagePanel("The device is restarting."); }
+    function() { openMessagePanel("Info", "<p>The device is restarting.</p>"); }
   );
 }
 
@@ -240,12 +241,12 @@ function updatePassword() {
       if(res.hasOwnProperty("error")) {
         error = res.error;
       }
-      openMessagePanel("<p>The device returned an error: <i>" + 
+      openMessagePanel("Error", "<p>The device returned an error: <i>" + 
         error + "</i></p><p>The password update failed.</p>");
     }
   }
   var e = function() { // error callback (connection failure)
-    openMessagePanel("<p>Failed to contact the device, the password update failed.</p>");
+    openMessagePanel("Error", "<p>Failed to contact the device, the password update failed.</p>");
   };
 
   if(u != "" && p != "") {
