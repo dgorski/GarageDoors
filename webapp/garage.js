@@ -252,7 +252,7 @@ function updatePassword() {
   if(u != "" && p != "") {
     settings.web.username = u;
     settings.web.password = p;
-    doPost("/api/updateConfig", JSON.stringify(settings), f, e);
+    doPost("/api/config", JSON.stringify(settings), f, e);
   }
 }
 

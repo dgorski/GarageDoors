@@ -1,0 +1,33 @@
+#!C:/strawberry/perl/bin/perl.exe
+
+$json = <<'EOJ';
+{
+  "wifi": {
+    "startAp": true,
+    "apSsid": "garage-123456",
+    "ssid": "",
+    "password": ""
+  },
+  "web": {
+    "hostname": "garage",
+    "username": "admin",
+    "password": "garage",
+    "port": 80
+  },
+  "syslog": {
+    "server": "",
+    "facility": 20,
+    "severity": 5
+  },
+  "ntp": {
+    "server": "time.nist.gov",
+    "poll": 86400
+  }
+}
+EOJ
+
+if($ENV{"REQUEST_METHOD"} eq "GET") {
+  print "Content-type: application/json\r\n\r\n$json";
+} else {
+  print "Content-type: application/json\r\n\r\n" . '{ "result": "OK" }';
+}

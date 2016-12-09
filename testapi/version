@@ -1,0 +1,12 @@
+#!C:/strawberry/perl/bin/perl.exe
+
+$ERROR = 0;
+$VERSION = "0.93";
+
+$json = "{ \"version\": \"" + $VERSION + "\" }"
+
+if($ERROR) {
+  $json = '{ "result": "error", "error": "An error occurred" }';
+}
+
+print "Content-type: application/json\r\n\r\n$json";
