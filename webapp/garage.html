@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html manifest="garage.manifest">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimal-ui" /> <!-- maximum-scale=1.0, -->
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-  <meta name="mobile-web-app-capable" content="yes" /> 
-  <link href="garage.css" media="all" rel="stylesheet" type="text/css" />
-  <link href="garage-mdi.css" media="all" rel="stylesheet" type="text/css" />
-  <script src="garage.js"></script>
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, minimal-ui"/>
+ <meta name="apple-mobile-web-app-capable" content="yes"/>
+ <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+ <meta name="mobile-web-app-capable" content="yes"/>
+ <link href="garage.css" media="all" rel="stylesheet" type="text/css"/>
+ <link href="garage-mdi.css" media="all" rel="stylesheet" type="text/css"/>
+ <script src="garage.js"></script>
 </head><body>
 
 <div id=image_loader><img src=garage-open.png /><img src=garage-closed.png /></div>
@@ -22,7 +22,7 @@
   <div id=doorDivContainer>
    <div id=doorSpacerDiv>&nbsp;</div>
    <div id=doorOneDiv>
-    <div><img src=garage-open.png width=100%/></div>
+    <div><img src=garage-closed.png width=100%/></div>
     <div class="button clickable" onclick="activateDoorOne();">Activate</div>
    </div>
    <div id=doorTwoDiv style="display:none"><!-- will be hidden unless "show second door" is active -->
@@ -32,10 +32,11 @@
   </div>
  </div>
 </div>
+
 <!-- settings panel -->
 <div id=settings class="page">
  <div class="header row clickable" onclick="openView('home');">
-  <i class="headerButtonLeft mdi mdi-arrow-left" ></i>
+  <i class="headerButtonLeft mdi mdi-arrow-left"></i>
   Settings
  </div>
  <div class="body row">
@@ -88,21 +89,28 @@
  </div>
  </div>
 </div>
+
 <!-- wifi settings panel -->
 <div id=settings_wifi class="page">
  <div class="header row clickable" onclick="openView('settings');">
-  <i class="headerButtonLeft mdi mdi-arrow-left" ></i>
+  <i class="headerButtonLeft mdi mdi-arrow-left"></i>
   WiFi
  </div>
  <div class="settingsPanel">
- <p>Some text</p>
+ <p>Which wifi network should the device connect to?</p>
+ <p>Changes will take place after a reboot.</p>
+ <form name="wifiForm">
+ <p>Network: <input name=ssid type=text value=network></p>
+ <p>Password: <input name=password type=text value=password></p>
+ </form>
+ <div class="button" onclick="updateWifiSsid();">Configure wifi network</div>
  </div>
 </div>
 
 <!-- logging panel -->
 <div id=settings_logging class="page">
  <div class="header row clickable" onclick="openView('settings');">
-  <i class="headerButtonLeft mdi mdi-arrow-left" ></i>
+  <i class="headerButtonLeft mdi mdi-arrow-left"></i>
   Logging
  </div>
  <div class="settingsPanel">
@@ -113,7 +121,7 @@
 <!-- time settings panel -->
 <div id=settings_time class="page">
  <div class="header row clickable" onclick="openView('settings');">
-  <i class="headerButtonLeft mdi mdi-arrow-left" ></i>
+  <i class="headerButtonLeft mdi mdi-arrow-left"></i>
   Time
  </div>
  <div class="settingsPanel">
@@ -124,7 +132,7 @@
 <!-- password panel -->
 <div id=settings_password class="page">
  <div class="header row clickable" onclick="openView('settings');">
-  <i class="headerButtonLeft mdi mdi-arrow-left" ></i>
+  <i class="headerButtonLeft mdi mdi-arrow-left"></i>
   Passwords
  </div>
  <div class="settingsPanel">
@@ -141,7 +149,7 @@
 <!-- restart panel -->
 <div id=settings_restart class="page">
  <div class="header row clickable" onclick="openView('settings');">
-  <i class="headerButtonLeft mdi mdi-arrow-left" ></i>
+  <i class="headerButtonLeft mdi mdi-arrow-left"></i>
   Restart
  </div>
  <div class="settingsPanel">
@@ -154,14 +162,14 @@
 <!-- firmware update panel -->
 <div id=settings_firmware class="page">
  <div class="header row clickable" onclick="openView('settings');">
-  <i class="headerButtonLeft mdi mdi-arrow-left" ></i>
+  <i class="headerButtonLeft mdi mdi-arrow-left"></i>
   Firmware Update
  </div>
  <div class="settingsPanel">
  <p>This option updates the firmware on the device.</p>
- <p>Check <a href="http://www.gorski.net/iot/garage/firmware">here</a> for avaialbe
+ <p>Check <a href="https://github.com/dgorski/GarageDoors">here</a> for available
  firmware updates.</p>
- <form name="fwForm" enctype="multipart/form-data" action="http://10.16.24.49/api/firmwareUpdate" method="POST">
+ <form name="fwForm" enctype="multipart/form-data" action="/api/firmwareUpdate" method="POST">
  <p>Select the application package:</p>
  <p><input type=file name=upload></p>
  <div class="button" onclick="fwUpdate();">Upload Firmware Update</div>
@@ -172,14 +180,14 @@
 <!-- web app update panel -->
 <div id=settings_webapp class="page">
  <div class="header row clickable" onclick="openView('settings');">
-  <i class="headerButtonLeft mdi mdi-arrow-left" ></i>
+  <i class="headerButtonLeft mdi mdi-arrow-left"></i>
   App Update
  </div>
  <div class="settingsPanel">
  <p>This option updates the application code (this web interface) on the device.</p>
- <p>Check <a href="http://www.gorski.net/iot/garage/firmware">here</a> for avaialbe
+ <p>Check <a href="https://github.com/dgorski/GarageDoors">here</a> for available
  application updates.</p>
- <form name="appForm" enctype="multipart/form-data" action="http://10.16.24.49/api/applicationUpdate" method="POST">
+ <form name="appForm" enctype="multipart/form-data" action="/api/applicationUpdate" method="POST">
  <p>Select the application package:</p>
  <p><input type=file name=upload></p>
  <div class="button" onclick="appUpdate();">Upload App Update</div>
@@ -190,7 +198,7 @@
 <!-- factory reset panel -->
 <div id=settings_freset class="page">
  <div class="header row clickable" onclick="openView('settings');">
-  <i class="headerButtonLeft mdi mdi-arrow-left" ></i>
+  <i class="headerButtonLeft mdi mdi-arrow-left"></i>
   Factory Reset
  </div>
  <div class="settingsPanel">
@@ -204,8 +212,8 @@
 
 <!-- feedback message panel -->
 <div id=messages class="page">
- <div class="header row clickable" onclick="openView('home');">
-  <i class="headerButtonLeft mdi mdi-arrow-left" ></i>
+ <div class="header row clickable" onclick="openView(previousView);">
+  <i class="headerButtonLeft mdi mdi-arrow-left"></i>
   <span id=messagesSpan>App Message</span>
  </div>
  <div id=messagesDiv class="settingsPanel">

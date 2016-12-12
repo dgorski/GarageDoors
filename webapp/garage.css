@@ -1,7 +1,8 @@
 
 /* these should all be hidden initially.  The openView() js method displays the appropriate one */
 #image_loader, #settings, #settings_freset, #settings_restart, #settings_firmware, #settings_webapp, 
-#settings_password, #settings_wifi, #settings_logging, #settings_time, #messages  { display: none; }
+#settings_password, #settings_wifi, #settings_logging, #settings_time, #messages 
+{ display: none; }
 
 body {
   margin: 0;
@@ -14,8 +15,6 @@ body {
 .row { left: 0; right: 0; }
 .col { top: 0; bottom: 0; }
 .page, .row, .col { overflow: hidden; }
-
-  /*.page, .row, .col {position: absolute;}*/ /* this broke click completely for the entire app */
 
 .header { 
   height: 3em;
@@ -52,9 +51,7 @@ body {
   display: none;
 }
   
-
-#doorDivContainer {
-}
+#doorDivContainer { }
 
 .headerButtonRight {
   color: darkgrey;

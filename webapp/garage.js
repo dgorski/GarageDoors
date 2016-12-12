@@ -1,7 +1,19 @@
 
+/*
+ * app logic
+ *
+ * dgorski - 11/22/2016
+ *
+ */
+ 
+var VERSION = "0.95";
+
 var currentView = 'home';
+var previousView = 'home';
+
 var showDoorTwo = false;
 var timers = { };
+
 var imgsrc = [ "garage-open.png", "garage-closed.png" ];
 
 window.onload = function() {
@@ -17,6 +29,16 @@ window.onload = function() {
   document.addEventListener("visibilitychange", function() { visibilityRefresh() });
   // call it once to set up the current state
   visibilityRefresh();
+  
+  // stash the remote config into local storage
+  doGet("/api/config", function() {
+    if(this.readyState != 4) return; // done done yet
+    if(this.code != 200) return; // failed
+    try {
+      var cfg = JSON.parse(this.responseText);
+      localStorage.setItem('deviceConfig', this.responseText);
+    } catch (e) { }
+  }, function() {} );
 }
 
 /**
@@ -30,7 +52,7 @@ function visibilityRefresh() {
     // (re)enable timed background data gathering
     timers["doorStates"] = setInterval(refreshDoorStates, 8000);
     // and run one now
-    refreshDoorStates();
+    //refreshDoorStates();
   }
 }
 
@@ -40,8 +62,14 @@ function visibilityRefresh() {
 function openView(view) {
   document.getElementById(currentView).style.display = 'none';
   document.getElementById(view).style.display = 'block';
+  previousView = currentView;
   currentView = view;
 }
+
+/**
+ * open the home view
+ */
+function homeView() { openView('home'); }
 
 /**
  * send an ajax GET request
@@ -49,7 +77,7 @@ function openView(view) {
 function doGet(uri, success_cb, error_cb) {
   if(success_cb === undefined) success_cb = function(){ };
   if(error_cb === undefined) error_cb = function(){
-    openMessagePanel("Error", "<p>The operation failed, the device did not respond to our request</p>");
+    openMessagePanel("Error", "<p>The operation failed, the device did not respond to our request</p>", true);
   };
 
   var xhttp = new XMLHttpRequest();
@@ -66,7 +94,7 @@ function doGet(uri, success_cb, error_cb) {
 function doPost(uri, data, success_cb, error_cb) {
   if(success_cb === undefined) success_cb = function(){ };
   if(error_cb === undefined) error_cb = function(){
-    openMessagePanel("Error", "<p>The operation failed, the device did not respond to the request</p>");
+    openMessagePanel("Error", "<p>The operation failed, the device did not respond to the request</p>", true);
   };
 
   var xhttp = new XMLHttpRequest();
@@ -84,7 +112,11 @@ function doPost(uri, data, success_cb, error_cb) {
 /**
  * For ajax callbacks
  */
-function openMessagePanel(title, message) {
+function openMessagePanel(title, message, homeAfter) {
+  // by default, reset to the home view after displaying the message
+  if(homeAfter === undefined) {
+    setTimeout(homeView, 4500); // 4.5s
+  }
   document.getElementById("messagesSpan").innerHTML = title;
   document.getElementById("messagesDiv").innerHTML = message;
   openView("messages");
@@ -105,36 +137,35 @@ function parseJson(expr) {
  */
 function refreshDoorStates() {
   //console.log("getting updated door states...");
-  doGet("/api/doorStatus", updateDoorStates, function(){});
-}
+  doGet("/api/doorStatus",
+    function() {
+      if(this.readyState != 4) return; // done done yet
+      if(this.code != 200) return; // failed
 
-/**
- * Update the main page images based on door states (open/closed)
- */
-function updateDoorStates() {
-  if(this.readyState != 4) return; // done done yet
+      var states = JSON.parse(this.responseText);
 
-  var states = JSON.parse(this.responseText);
+      if(states.hasOwnProperty("doorOne")) {
+        var state = states["doorOne"];
+        var img = document.getElementById("doorOneDiv").getElementsByTagName("IMG")[0];
+        if(state == "open") {
+          img.src = imgsrc[0];
+        } else if(state == "closed") {
+          img.src = imgsrc[1];
+        }
+      }
 
-  if(states.hasOwnProperty("doorOne")) {
-    var state = states["doorOne"];
-    var img = document.getElementById("doorOneDiv").getElementsByTagName("IMG")[0];
-    if(state == "open") {
-      img.src = imgsrc[0];
-    } else if(state == "closed") {
-      img.src = imgsrc[1];
-    }
-  }
-
-  if(states.hasOwnProperty("doorTwo")) {
-    var state = states["doorTwo"];
-    var img = document.getElementById("doorTwoDiv").getElementsByTagName("IMG")[0];
-    if(state == "open") {
-      img.src = imgsrc[0];
-    } else if(state == "closed") {
-      img.src = imgsrc[1];
-    }
-  }
+      if(states.hasOwnProperty("doorTwo")) {
+        var state = states["doorTwo"];
+        var img = document.getElementById("doorTwoDiv").getElementsByTagName("IMG")[0];
+        if(state == "open") {
+          img.src = imgsrc[0];
+        } else if(state == "closed") {
+          img.src = imgsrc[1];
+        }
+      }
+    },
+    function(){} // ignore connection errors
+  );
 }
 
 /**
@@ -142,7 +173,7 @@ function updateDoorStates() {
  */
 function activateDoorOne() {
   console.log("activateDoorOne()");
-  doPost("/api/door1"); // don't need response
+  doPost("/api/door1");
 }
 
 /**
@@ -150,7 +181,7 @@ function activateDoorOne() {
  */
 function activateDoorTwo() {
   console.log("activateDoorTwo()");
-  doPost("/api/door2"); // don't need response
+  doPost("/api/door2");
 }
 
 /**
@@ -187,7 +218,10 @@ function toggleDoorTwo() {
 function factoryReset() {
   console.log("factoryReset()");
   doPost("/api/freset", undefined,
-    function() { openMessagePanel("Info", "<p>The device is resetting.</p>"); }
+    function() {
+      if(this.readyState != 4) return;
+      openMessagePanel("Info", "<p>The device is resetting.</p>");
+    }
   );
 }
 
@@ -197,7 +231,10 @@ function factoryReset() {
 function restartDevice() {
   console.log("restartDevice()");
   doPost("/api/restart", undefined,
-    function() { openMessagePanel("Info", "<p>The device is restarting.</p>"); }
+    function() {
+      if(this.readyState != 4) return;
+      openMessagePanel("Info", "<p>The device is restarting.</p>");
+    }
   );
 }
 
@@ -208,6 +245,7 @@ function fwUpdate() {
   console.log("fwUpdate");
   var fwForm = document.forms.fwForm;
   if(fwForm.value != "") {
+    // TODO: use FormData object to send with XHR
     document.forms.fwForm.submit();
   }
 }
@@ -219,6 +257,7 @@ function appUpdate() {
   console.log("appUpdate");
   var appForm = document.forms.appForm;
   if(appForm.value != "") {
+    // TODO: use FormData object to send with XHR
     document.forms.appForm.submit();
   }
 }
@@ -229,45 +268,81 @@ function appUpdate() {
 function updatePassword() {
   var settings = { "web": { "username": "", "password": "" } };
   var form = document.forms.passwordForm;
-  var u = form.elements.namedItem("username").value;
-  var p = form.elements.namedItem("password").value;
+
+  settings.web.username = form.elements.namedItem("username").value;
+  settings.web.password = form.elements.namedItem("password").value;
 
   var f = function() { // completion callback
-    if (this.readyState == 4 && this.status == 200) {
+    if(this.readyState != 4) return;
+    if(this.status == 200) {
       var res = JSON.parse(this.responseText);
-    } else if(this.readyState == 4) { // this is an error
+      openMessagePanel("Info", "<p>The username and password were set successfully</p>");
+    } else { // this is an error
       var res = parseJson(this.responseText);
       var error = "Unknown error";
       if(res.hasOwnProperty("error")) {
         error = res.error;
       }
-      openMessagePanel("Error", "<p>The device returned an error: <i>" + 
-        error + "</i></p><p>The password update failed.</p>");
+      openMessagePanel("Error", "<p>The device returned an error: <i>" +
+        error + "</i></p><p>The user/password update failed.</p>");
     }
   }
-  var e = function() { // error callback (connection failure)
-    openMessagePanel("Error", "<p>Failed to contact the device, the password update failed.</p>");
-  };
 
-  if(u != "" && p != "") {
-    settings.web.username = u;
-    settings.web.password = p;
-    doPost("/api/config", JSON.stringify(settings), f, e);
+  if(settings.web.username != "" && settings.web.password != "") {
+    doPost("/api/config", JSON.stringify(settings), f);
+  } else {
+    openMessagePanel("Error", "<p>The user or password field was blank!</p>");
+  }
+}
+
+/**
+ * Set the SSID and Password for WiFi Station mode
+ */
+function updateWifiSsid() {
+  var settings = { "wifi": { "ssid": "", "password": "" } };
+  var form = document.forms.wifiForm;
+
+  settings.wifi.ssid = form.elements.namedItem("ssid").value;
+  settings.wifi.password = form.elements.namedItem("password").value;
+
+  var f = function() { // completion callback
+    if(this.readyState != 4) return;
+    if(this.status == 200) {
+      var res = JSON.parse(this.responseText);
+      openMessagePanel("Info", 
+        "<p>The network name and password were set successfully</p>" +
+        "<p>The device will join the new network at the next restart.</p>"
+      );
+    } else { // this is an error
+      var res = parseJson(this.responseText);
+      var error = "Unknown error";
+      if(res.hasOwnProperty("error")) {
+        error = res.error;
+      }
+      openMessagePanel("Error", "<p>The device returned an error: <i>" +
+        error + "</i></p><p>The wifi configuration update failed.</p>");
+    }
+  }
+
+  if(settings.wifi.ssid != "" && settings.wifi.password != "") {
+    doPost("/api/config", JSON.stringify(settings), f);
+  } else {
+    openMessagePanel("Error", "<p>The user or password field was blank!</p>");
   }
 }
 
 /**
  * Ask the controller to scan wifi networks and return a list
+ * TODO: add nice UI for scan data
  */
 function wifiScan() {
   console.log("Requesting wifi network scan");
-  doGet("/api/wifiScan", wifiScanResult);
-}
-
-/**
- * Process the result of a wifi scan
- */
-function wifiScanResult(result) {
-  var networks = JSON.parse(result.responseText);
-  console.log("wifi scan data: " + JSON.stringify(networks));
+  doGet("/api/wifiScan", 
+    function(){
+      if(this.readyState != 4) return;
+      var networks = JSON.parse(this.responseText);
+      networks.sort(function(a, b){ return b.rssi - a.rssi; });
+      console.log("wifi scan data: " + JSON.stringify(networks, null, 2));
+    }
+  );
 }

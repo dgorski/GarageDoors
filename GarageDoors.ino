@@ -8,7 +8,7 @@
 #include "syslog.h"
 #include "ntp.h"
 
-const char* VERSION = "0.94";
+const char* VERSION = "0.96";
 
 ESP8266WebServer server(80);
 
@@ -17,6 +17,7 @@ const int relayOne  = D0;
 const int relayTwo  = D1;
 const int switchOne = D2;
 const int switchTwo = D3;
+const int wifiSwitch = D5;
 
 int switchOneState = LOW;
 int switchTwoState = LOW;
@@ -31,15 +32,11 @@ void setup() {
   Serial.print("Last restart cause: ");
   Serial.println(ESP.getResetReason());
 
-  SPIFFS.begin();
-
-  // set default config, read or initialize saved config
-  initConfig();
-
   pinMode(relayOne, OUTPUT); // door one button
   pinMode(relayTwo, OUTPUT); // door two button
   pinMode(switchOne, INPUT_PULLUP); // door one switch
   pinMode(switchTwo, INPUT_PULLUP); // door two switch
+  pinMode(wifiSwitch, INPUT_PULLUP); // wifi reset switch
 
   digitalWrite(relayOne, HIGH); // relay off
   digitalWrite(relayTwo, HIGH); // relay off
@@ -47,16 +44,30 @@ void setup() {
   switchOneState = digitalRead(switchOne);
   switchTwoState = digitalRead(switchTwo);
 
-  wifiSetup();
-  webServerSetup();
+  SPIFFS.begin();
 
-  if(MDNS.begin(webCfg.hostname.c_str())) {
-    Serial.println (F("MDNS responder started"));
-    MDNS.addService("http", "tcp", 80);
+  // hardware reset button?
+  if(digitalRead(wifiSwitch) == LOW) {
+    delay(1000);
+    if(digitalRead(wifiSwitch) == LOW) {
+      // if the reset button is still LOW, reset the config
+      SPIFFS.remove(CONFIG_FILE); // erase config file
+      Serial.println(F("Reset button press detected, resetting to factory config"));
+    }
   }
 
+  // set default config, read or initialize saved config
+  initConfig();
+  wifiSetup();
+  webServerSetup();
   syslogSetup();
   ntpSetup();
+
+  if(MDNS.begin(webCfg.hostname.c_str())) {
+    Serial.print(F("MDNS responder started for name: "));
+    Serial.println(webCfg.hostname);
+    MDNS.addService("http", "tcp", 80);
+  }
 
   Serial.print(F("Open http://"));
   if(wifiCfg.ssid != "") {
@@ -112,32 +123,39 @@ void wifiSetup() {
   // start with all wifi modes off
   WiFi.mode(WIFI_OFF);
 
-  if(wifiCfg.startAp) {
-    Serial.print(F("Starting Access Point (AP) with SSID: "));
-    Serial.println(wifiCfg.apSsid);
-    if(!WiFi.softAP(wifiCfg.apSsid.c_str())) {
-      Serial.println(F("Failed to start AP!"));
-      WiFi.printDiag(Serial);
-    }
-  }
-
   if(wifiCfg.ssid != String("")) {
     if(wifiCfg.password != String("")) {
       WiFi.begin(wifiCfg.ssid.c_str(), wifiCfg.password.c_str());
     } else{
       WiFi.begin(wifiCfg.ssid.c_str());
     }
+
     if(WiFi.waitForConnectResult() != WL_CONNECTED) {
-      if(!wifiCfg.startAp) {
-        Serial.println(F("WiFi Connect Failed! Rebooting..."));
+      Serial.println("Wifi station connect failed.");
+      WiFi.printDiag(Serial);
+
+      Serial.print(F("Starting Access Point (AP) with SSID: "));
+      Serial.println(wifiCfg.apSsid);
+      if(!WiFi.softAP(wifiCfg.apSsid.c_str())) {
+        Serial.println(F("Failed to start AP!"));
+        WiFi.printDiag(Serial);
         delay(1000);
         ESP.restart();
       }
     }
+  } else { // no station config, start AP
+    Serial.print(F("Starting Access Point (AP) with SSID: "));
+    Serial.println(wifiCfg.apSsid);
+    if(!WiFi.softAP(wifiCfg.apSsid.c_str())) {
+      Serial.println(F("Failed to start AP!"));
+      WiFi.printDiag(Serial);
+      delay(1000);
+      ESP.restart();
+    }
   }
+  
   Serial.println();
   WiFi.printDiag(Serial);
-  
 }
 
     /**********************************
@@ -186,15 +204,24 @@ String getContentType(String filename){
  * Read a file from FS, or return false indicating failure
  */
 bool handleFileRead(String path){
-  if(path.endsWith("/")) path += "index.html";
+  if(path.equals("/") || path.equals("/index.html")) {
+    server.sendHeader("Location", "/garage.html", true);
+    server.send(302, "text/plain", "moved permanently");
+  }
+  if(path.endsWith("/")) path += "index.html"; // for subdirs
+  Serial.printf("SERVER: Serving static file '%s'\n", path.c_str());
   String contentType = getContentType(path);
   String pathWithGz = path + ".gz";
   if(SPIFFS.exists(pathWithGz) || SPIFFS.exists(path)){
     if(SPIFFS.exists(pathWithGz))
       path += ".gz";
     File file = SPIFFS.open(path, "r");
+    delay(100);
+    server.sendHeader("Connection", "close");
     size_t sent = server.streamFile(file, contentType);
     file.close();
+    Serial.printf("SERVER: Sent %d bytes.\n", sent);
+    delay(100);
     return true;
   }
   return false;

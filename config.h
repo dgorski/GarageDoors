@@ -202,7 +202,7 @@ void initConfig() {
     wifiCfg.ssid = "";
     wifiCfg.password = "";
 
-    webCfg.hostname = "garagex"; // TODO
+    webCfg.hostname = "garage";
     webCfg.username = "admin";
     webCfg.password = "garage";
     webCfg.port = 80; // TODO: currently not used, web server needs
